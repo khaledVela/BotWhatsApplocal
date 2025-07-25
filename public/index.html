@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>WhatsApp Multi Sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+            color: #333;
+        }
+
+        h1 {
+            color: #25d366;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+
+        select,
+        input,
+        button,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #25d366;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1ebd59;
+        }
+
+        .section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+
+        .status {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>💬 WhatsApp Multi-Sesión</h1>
+
+    <div class="section">
+        <label for="session">Selecciona una cuenta:</label>
+        <select id="session">
+            <option value="cuenta1">Cuenta 1</option>
+            <option value="cuenta2">Cuenta 2</option>
+            <option value="cuenta3">Cuenta 3</option>
+        </select>
+
+        <button onclick="obtenerQR()">Generar QR</button>
+        <button onclick="verificarEstado()">Verificar Estado</button>
+
+        <div id="estadoSesion" class="status"></div>
+        <div id="qrContainer">QR no generado aún</div>
+    </div>
+
+    <div class="section">
+        <h2>Enviar Mensaje Individual</h2>
+        <form id="formMensaje" enctype="multipart/form-data">
+            <label for="numero">Número (ej: 59171234567)</label>
+            <input type="text" name="numero" placeholder="Número WhatsApp" required />
+
+            <label for="texto">Mensaje (opcional)</label>
+            <input type="text" name="texto" placeholder="Mensaje para enviar" />
+
+            <label for="imagen">Imagen (opcional)</label>
+            <input type="file" name="imagen" accept="image/*" />
+
+            <label for="sessionForm">Sesión</label>
+            <select name="session">
+                <option value="cuenta1">Cuenta 1</option>
+                <option value="cuenta2">Cuenta 2</option>
+                <option value="cuenta3">Cuenta 3</option>
+            </select>
+
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+    <script>
+        let cuentaAnterior = null;
+
+        async function obtenerQR() {
+            const session = document.getElementById('session').value;
+            const qrContainer = document.getElementById('qrContainer');
+            const estadoSesion = document.getElementById('estadoSesion');
+
+            if (cuentaAnterior && cuentaAnterior !== session) {
+                qrContainer.innerHTML = "♻️ QR anterior eliminado";
+                estadoSesion.innerText = "";
+            }
+
+            cuentaAnterior = session;
+
+            try {
+                const estadoRes = await fetch(`/api/estado/${session}`);
+                const estadoData = await estadoRes.json();
+
+                if (estadoData.logueado) {
+                    estadoSesion.innerText = `✅ Sesión "${session}" ya está activa`;
+                    estadoSesion.style.color = "green";
+                    qrContainer.innerHTML = "✅ Ya está conectada.";
+                    return;
+                }
+
+                const qrRes = await fetch(`/api/qr/${session}`);
+                const qrData = await qrRes.json();
+
+                qrContainer.innerHTML = `<img src="${qrData.qr}" alt="QR ${session}" />`;
+                estadoSesion.innerText = `📲 Escanea el QR para iniciar sesión "${session}"`;
+                estadoSesion.style.color = "black";
+            } catch (err) {
+                qrContainer.innerText = '❌ No se pudo generar el QR.';
+                estadoSesion.innerText = '⚠️ Error al obtener estado o QR.';
+                estadoSesion.style.color = "orange";
+            }
+        }
+
+        async function verificarEstado() {
+            const session = document.getElementById('session').value;
+            const estadoSesion = document.getElementById('estadoSesion');
+
+            try {
+                const res = await fetch(`/api/estado/${session}`);
+                const data = await res.json();
+                estadoSesion.innerText = data.logueado
+                    ? `✅ Sesión "${session}" está logueada`
+                    : `❌ Sesión "${session}" NO está logueada`;
+                estadoSesion.style.color = data.logueado ? "green" : "red";
+            } catch (err) {
+                estadoSesion.innerText = "⚠️ Error al verificar estado";
+                estadoSesion.style.color = "orange";
+            }
+        }
+
+        document.getElementById('formMensaje').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const session = form.session.value;
+
+            const res = await fetch(`/api/enviar-imagen/${session}`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+            alert(data.success ? '✅ Enviado correctamente' : '❌ Error: ' + data.error);
+            if (data.success) form.reset();
+        });
+
+    </script>
+</body>
+
+</html>
