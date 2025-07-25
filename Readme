@@ -1,150 +1,58 @@
-Aquí tienes un **README.md** detallado para tu proyecto. He omitido las partes sobre la transformación a servidor web (como me pediste), y me he centrado en la descripción de funcionalidades, cómo instalar y usar el código, y los detalles técnicos de cada parte del proyecto.
+# WhatsApp Multi-Sesión 🚀
+
+**WhatsApp Multi-Sesión** es una herramienta para gestionar múltiples sesiones de **WhatsApp Web** de forma sencilla y eficaz, permitiéndote generar códigos QR, verificar el estado de la sesión y enviar mensajes individuales (con imágenes opcionales) a contactos de WhatsApp. Todo desde una interfaz web intuitiva.
 
 ---
 
-# WhatsApp Multi-Sesión
+## Funcionalidades ✨
 
-## Descripción
-
-Este proyecto permite gestionar múltiples sesiones de WhatsApp Web a través de la API de **WPPConnect**. A través de un servidor Express y una interfaz web, los usuarios pueden:
-
-1. **Iniciar sesión en WhatsApp Web** con un código QR.
-2. **Verificar el estado de la sesión** (si está logueada o no).
-3. **Enviar mensajes** (de texto o con imágenes) a contactos individuales.
-4. **Reiniciar sesiones** en caso de desconexión o problemas.
+- **Generación de QR** para cada sesión de WhatsApp Web.
+- **Verificación de sesión**: Comprueba si tu sesión está activa o desconectada.
+- **Envía mensajes de texto** o **imágenes** a números específicos.
+- **Reinicia sesiones**: Recarga la sesión y genera un nuevo QR si se desconecta.
 
 ---
 
-## Funcionalidades
-
-1. **Generar QR para cada sesión**: Cada cuenta de WhatsApp (sesión) genera su propio código QR para que sea escaneado en la aplicación de WhatsApp en tu dispositivo móvil.
-
-2. **Verificar si una sesión está activa**: Puedes comprobar si una sesión está activa o si necesita ser reconectada.
-
-3. **Enviar mensajes a contactos**: Puedes enviar mensajes de texto o imágenes a números de teléfono específicos.
-
-4. **Reiniciar sesiones**: En caso de que la sesión esté colgada o desconectada, puedes reiniciar la sesión y generar un nuevo QR.
-
----
-
-## Requisitos
-
-* **Node.js** (v12 o superior)
-* **npm** (o **yarn** como alternativa)
-* **WPPConnect**: Usado para conectar con WhatsApp Web mediante Puppeteer y manejar las sesiones.
-* **Multer**: Para manejar la subida de imágenes.
-
----
-
-## Instalación
+## Instalación 🔧
 
 1. **Clona el repositorio**:
 
-   ```bash
-   git clone https://github.com/tu-usuario/whatsapp-multi-sesion.git
-   cd whatsapp-multi-sesion
-   ```
-
 2. **Instala las dependencias**:
 
-   Asegúrate de tener **Node.js** y **npm** instalados. Luego, corre el siguiente comando para instalar todas las dependencias:
-
    ```bash
-   npm install
-   ```
+    npm install
+    ```
 
----
+3. **Inicia el servidor**:
 
-## Archivos Principales
+    ```bash
+    node server.js
+    ```
 
-### 1. **server.js**
+4. **Accede a la interfaz**:
 
-Este archivo es el **punto de entrada** de la aplicación. Inicia el servidor Express, configura las rutas y sirve los archivos estáticos desde la carpeta `public`. También maneja la conexión de las sesiones de WhatsApp Web.
+    Abre tu navegador y visita http://localhost:3000 para ver la interfaz de usuario.
 
-### 2. **routes.js**
+ ## Estructura del Proyecto 📂
 
-Contiene todas las rutas de la API que se utilizan para interactuar con las sesiones de WhatsApp. Estas rutas son:
+        /tu-proyecto
+        ├── /public             # Archivos estáticos (HTML, CSS, JS)
+        ├── /uploads           # Carpeta para almacenar imágenes subidas
+        ├── /tokens            # Sesiones de WhatsApp Web
+        ├── /src               # Lógica principal (wppManager.js)
+        ├── /node_modules      # Dependencias de Node.js
+        ├── package.json       # Archivo de configuración de dependencias
 
-* **`/qr/:session`**: Genera un nuevo QR para una sesión especificada.
-* **`/estado/:session`**: Verifica si una sesión está activa.
-* **`/enviar-imagen/:session`**: Envia un mensaje de texto o una imagen a un número específico.
-* **`/reiniciar/:session`**: Reinicia una sesión especificada.
+## Flujo de la Aplicación 💻
 
-### 3. **wppManager.js**
+1. **Generar QR para sesión** 📲
+- Cuando seleccionas una sesión, puedes generar un código QR para escanear con tu aplicación de WhatsApp. Esto permite iniciar sesión en WhatsApp Web y sincronizar el chat.
 
-Gestiona las sesiones de WhatsApp Web utilizando **WPPConnect**. Contiene los métodos para:
+2. **Verificar estado de sesión** ✅
+- Puedes comprobar si una sesión está conectada o desconectada. Si la sesión está inactiva, te pedirá que la reinicies generando un nuevo QR.
 
-* **`createSession(sessionName)`**: Crea una nueva sesión y genera el QR para ella.
-* **`getQR(sessionName)`**: Obtiene el código QR generado para la sesión.
-* **`isLogged(sessionName)`**: Verifica si la sesión está activa.
-* **`sendMessage(sessionName, numero, mensaje)`**: Envía un mensaje de texto a un número.
-* **`sendMediaToList(sessionName, contactos, mensaje, imagenPath, intervalo)`**: Envía un mensaje a múltiples números con un intervalo de tiempo (actualmente no usado).
+3. **Enviar mensajes** 📩
+- Envía mensajes de texto o imágenes a números de WhatsApp especificados. Esto se hace a través de un formulario en el frontend. También se permite adjuntar una imagen en el mensaje.
 
----
-
-## Uso
-
-### 1. **Iniciar sesión con QR**
-
-* Selecciona la sesión de WhatsApp que deseas usar (por ejemplo, `cuenta1`, `cuenta2`, etc.).
-* Haz clic en **"Generar QR"** para obtener el código QR que debes escanear con tu teléfono para iniciar sesión en WhatsApp Web.
-
-### 2. **Verificar estado de la sesión**
-
-* Si ya has iniciado sesión previamente, puedes verificar si la sesión sigue activa haciendo clic en **"Verificar Estado"**.
-
-### 3. **Enviar mensaje**
-
-* En el formulario de "Enviar Mensaje Individual", puedes escribir un número de WhatsApp (con el código de país, por ejemplo: `59171234567`), un mensaje y opcionalmente una imagen para enviar.
-* Haz clic en **"Enviar"** y el mensaje se enviará a ese número.
-
-### 4. **Reiniciar sesión**
-
-* Si tu sesión está inactiva o desconectada, puedes reiniciarla haciendo clic en el botón de **"Reiniciar"**. Esto eliminará cualquier sesión anterior y generará un nuevo QR.
-
----
-
-## Flujo del Código
-
-### 1. **Generación del QR**
-
-* Cuando un usuario hace clic en **"Generar QR"**, el servidor usa **WPPConnect** para crear una nueva sesión de WhatsApp Web. El QR generado se devuelve al frontend y se muestra en la página.
-
-### 2. **Verificación de Estado**
-
-* Se hace una consulta al backend para verificar si la sesión sigue activa utilizando el método `isLogged()`. Si está activa, se muestra un mensaje indicando que la sesión está conectada. Si no, el sistema informará que está desconectada.
-
-### 3. **Envío de Mensajes**
-
-* Los mensajes se envían de manera individual a los números proporcionados por el usuario en el formulario utilizando el método `sendText()` de **WPPConnect**. Si se proporciona una imagen, esta se envía mediante el método `sendImage()`.
-* Las imágenes son subidas utilizando **Multer**, que maneja la parte del formulario que permite seleccionar archivos.
-
-### 4. **Reinicio de Sesión**
-
-* Si la sesión se desconecta o falla, el usuario puede hacer clic en el botón **"Reiniciar"**, lo que hará que se eliminen los archivos de sesión previos y se cree una nueva sesión de WhatsApp Web.
-
----
-
-## Dependencias
-
-### 1. **Express**: Framework para crear el servidor web.
-
-### 2. **WPPConnect**: Para gestionar sesiones de WhatsApp Web y la automatización de mensajes.
-
-### 3. **Multer**: Para manejar la subida de imágenes de forma sencilla.
-
----
-
-## Contribución
-
-Si quieres contribuir a este proyecto, sigue estos pasos:
-
-1. **Fork el repositorio**.
-2. **Clona tu fork**:
-
-   ```bash
-   git clone https://github.com/tu-usuario/whatsapp-multi-sesion.git
-   ```
-3. Haz tus cambios y **haz un pull request** para revisarlos.
-
----
+4. **Reiniciar sesión** 🔄
+- Si la sesión está desconectada o presenta errores, puedes reiniciarla, lo que elimina cualquier sesión previa y genera un nuevo QR para iniciar sesión.
